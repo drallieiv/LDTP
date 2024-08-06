@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <style>
+      main {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      main > div {
+        flex-grow: 1;
+        border: 1px solid lightgray;
+        padding: 1em;
+      }
+      .layout-preview {
+        flex-basis: 100%;
+      }
+      h2 {
+        margin-block-start: 0;
+      }
+
+      @media print {
+        .layout-load, h2 { 
+          display: none;
+        }
+        main > div {
+          border: none;
+        }
+        .printZone img{
+          break-inside: avoid;
+        }
+      }
+      .printZone img {
+        width: 57mm;
+      }
+    </style>
+    <script>
+      function handleFileSelect(event) {
+        const fileInput = event.target;
+        const files = fileInput.files;
+
+        if (files.length > 0) {
+          console.log('File selected:', files[0]);
+
+          const reader = new FileReader();
+
+          reader.onload = function(e) {
+            try {
+              // Parse the JSON data into a JavaScript object
+              const jsonObject = JSON.parse(e.target.result);
+              updatePreviewWith(jsonObject);
+            } catch (error) {
+              console.error('Error parsing JSON:', error);
+            }
+          };
+
+          // Read the file as text
+          reader.readAsText(files[0]);
+        }
+      }
+
+      function updatePreviewWith(jsonData) {
+        const proxyPreview = document.getElementById('proxyPreview');
+
+        let cards = jsonData.ObjectStates[0].CustomDeck;
+
+        let newDiv = document.createElement("div");
+        newDiv.classList.add('printZone');
+
+        for (const key in cards) {
+          if (cards.hasOwnProperty(key)) {
+            const img = document.createElement("img");
+            img.src = cards[key].FaceURL;
+            newDiv.appendChild(img);
+          }
+        }
+
+        proxyPreview.innerHTML = ``;
+        proxyPreview.appendChild(newDiv);
+      };
+
+      window.onload = function() {
+        const fileInput = document.getElementById('loadFile');
+        fileInput.addEventListener('change', handleFileSelect);
+      }
+    </script>
+  </head>
+  <main>
+    <div class="layout-load">
+      <h2>Chargement du deck Dreaborn au format TTS</h2>
+      <!--
+      <label for="loadText">Copier/Coller du lien</label>
+      <input type="text" id="loadText">
+      <button type="submit">Charger</button>
+      <p>ou</p>
+      -->
+      <input type="file" id="loadFile">
+    </div>
+    <div class="layout-preview">
+      <h2>Preview</h2>
+      <div id="proxyPreview"></div>
+    </div>
+  </main>
+</html>
